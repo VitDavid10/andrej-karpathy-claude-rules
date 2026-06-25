@@ -1,7 +1,5 @@
 # Claude Code Rules
 
-Inspired by Andrej Karpathy's LLM coding guidelines + Anthropic best practices
-
 **Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
 
 ---

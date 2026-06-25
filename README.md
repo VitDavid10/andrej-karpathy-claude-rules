@@ -1,8 +1,8 @@
-# Andrej Karpathy Rules — Claude Code & Cursor Guidelines
+# Andrej Karpathy's Claude Code Rules: 10 Guidelines
 
 > Behavioral guidelines to eliminate the most common LLM coding mistakes.
 
-A drop-in `CLAUDE.md` / Cursor ruleset that makes the model **think before coding, change only what it must, and prove its work**. Built on [Andrej Karpathy's LLM coding guidelines](https://github.com/multica-ai/andrej-karpathy-skills), extended with [Anthropic's official Claude Code best practices](https://docs.anthropic.com/en/docs/claude-code).
+A drop-in `CLAUDE.md` / Cursor ruleset extending [Andrej Karpathy's 4 core principles](https://github.com/multica-ai/andrej-karpathy-skills) to **10 practical guidelines** for Claude Code and Cursor. Makes the model think before coding, change only what it must, and prove its work. Built on [Anthropic's official Claude Code best practices](https://docs.anthropic.com/en/docs/claude-code) and refined through production use.
 
 > *"Models make wrong assumptions and keep going without checking. They don't handle confusion or ask for clarification."* — Andrej Karpathy
 

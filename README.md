@@ -172,9 +172,26 @@ Copy `CURSOR.md` to `.cursor/rules/guidelines.mdc` inside your project, or paste
 
 ---
 
-## These rules are working if…
+## Tradeoff
 
-Fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come **before** implementation rather than after mistakes.
+These guidelines bias toward caution over speed. For trivial tasks (simple typo fixes, obvious one-liners), use judgment — not every change needs the full rigor.
+
+The goal is reducing costly mistakes on non-trivial work, not slowing down simple tasks.
+
+**You'll know the rules are working when:**
+- Diffs have fewer unnecessary changes — only what was asked
+- Clarifying questions come *before* implementation, not after mistakes
+- The model stops and names confusion instead of silently assuming
+- First drafts don't need rewrites due to overcomplication
+- Edge cases and bugs are caught before marking done, not after
+- The right model tier is used for the right task — no wasted tokens
+
+**Possible rules to add as your workflow evolves:**
+- **Memory** — persist lessons learned across sessions so the same mistake isn't repeated twice
+- **Context hygiene** — rules for what to summarize and drop when the conversation grows long
+- **Documentation** — when and how to update docs alongside code changes
+- **Testing discipline** — stricter TDD enforcement for projects with a real test suite
+- **Security** — never introduce OWASP top 10 vulnerabilities; flag suspicious inputs at boundaries
 
 ---
 

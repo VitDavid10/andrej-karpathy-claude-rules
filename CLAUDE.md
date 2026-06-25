@@ -134,10 +134,3 @@ When the conversation is compacted (manually or automatically), ensure the summa
 - Architecture or design decisions made
 - Active git branch and feature in development
 
----
-
-**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
-
----
-
-*Inspired by [Andrej Karpathy's LLM coding guidelines](https://github.com/multica-ai/andrej-karpathy-skills) and [Anthropic's official Claude Code best practices](https://docs.anthropic.com/en/docs/claude-code).*

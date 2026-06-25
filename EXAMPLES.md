@@ -250,34 +250,7 @@ green.
 
 ---
 
-## 9. Subagents
-
-**User request:** "Where in the codebase do we decide bot respawn timing, and is it consistent between classic and arcade?"
-
-**❌ What LLMs do (flood the main context)**
-
-```
-[Greps 40 files inline, reads sim.js, server/index.js, hunters.js,
-test-backfill.js in full, dumping thousands of lines into the main
-conversation before answering]
-```
-
-**✅ What should happen (delegate the search)**
-
-```
-This is a search-and-trace question across several files — I'll send it to a
-subagent so the main context stays clean, and report back just the answer:
-
-  → "Find where bot respawn timing is set; compare classic vs arcade paths."
-
-[Subagent returns: respawn is queued in sim.js refillBots() for both modes;
-arcade adds a 30s post-match delay in server/index.js. Consistent except that
-delay.]
-```
-
----
-
-## 10. Elegance
+## 9. Elegance
 
 **User request:** "Clamp the player to the arena bounds."
 
@@ -306,7 +279,7 @@ Same behavior, half the lines, and the radius-aware bound is now obvious.
 
 ---
 
-## 11. Model Optimization
+## 10. Model Optimization
 
 **Scenario:** On Opus, the user asks "what does this regex `/^ws:\/\//` match?"
 
@@ -329,30 +302,6 @@ needs deep multi-file reasoning.
 
 ---
 
-## 12. Compaction
-
-**Scenario:** A long debugging session is about to be auto-compacted mid-task.
-
-**❌ What LLMs do (lose the thread)**
-
-```
-[Summary keeps the chit-chat but drops which file was half-edited and why
-the last fix didn't work — the next turn re-investigates from scratch]
-```
-
-**✅ What should happen (preserve what matters)**
-
-```
-Before compacting, the summary retains:
-
-- Task: fixing desync where own cell vibrates online (IN PROGRESS)
-- Root cause found: re-base on every snapshot; smoothing is the fix
-- File mid-edit: game/index.html, applyServerSnapshot() — exponential smooth added,
-  extrapolation cap not yet done
-- Open TODO: cap extrapolation at 150ms, then re-test with 2 clients
-- Branch: main; verified locally via npx http-server :8123
-```
-
 ---
 
 ## Anti-patterns summary
@@ -367,10 +316,8 @@ Before compacting, the summary retains:
 | Planning | Edits 6 files then hits an architecture wall | Goal + files + open questions, validated first |
 | Verification | "Done" with no run | Show the run, the edge cases, the logs |
 | Errors | Hands the failing test back to the user | Trace root cause, fix, re-run CI |
-| Subagents | Dumps 40 files into the main context | Delegate the search, report the answer |
 | Elegance | Eight `if` clamps | One `clamp()` helper |
 | Model Optimization | Trivial Q&A on Opus all session | Flag once, switch to a cheaper model |
-| Compaction | Summary drops the half-done edit | Keep task, root cause, mid-edit file, TODOs, branch |
 
 ## Key insight
 

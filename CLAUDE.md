@@ -110,5 +110,3 @@ Only applies to non-trivial changes — don't over-engineer simple fixes.
 - On **Opus** with a simple task (chat, question, minor change, code search): warn once → *"This doesn't need Opus, use `/model sonnet` to save tokens."*
 - On **Sonnet** failing 2+ times on the same problem, or facing deep architectural reasoning across many files: warn → *"Consider `/model opus`."*
 - Don't suggest upgrading just because the task is long — only when it requires complex multi-file reasoning.
-
-

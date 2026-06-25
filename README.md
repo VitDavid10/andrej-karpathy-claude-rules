@@ -21,60 +21,160 @@ Karpathy's four principles target the biggest failure modes of LLM coding. Every
 
 ---
 
-## Beyond the 4: problems we kept hitting
+## Beyond the 4: honesty, process, and resource use
 
-The four principles cover *how* the model writes code. But in real day-to-day use, other recurring problems showed up — about honesty, process, and resource use. Each one motivated an extra rule:
+The four principles cover *how* the model writes code. Three more classes of problem come from Anthropic's own guidance and from day-to-day production use — and each one earns an extra rule.
 
-| Problem observed in practice | Rule added |
-|---|---|
-| Model agrees with everything and states guesses as facts | **5. Honesty** |
-| Dives into a multi-file change with no plan, then backtracks | **6. Planning** |
-| Marks a task "done" without running anything | **7. Verification** |
-| Stops at the first error and asks the user to fix it | **8. Errors** |
-| Main context fills up with exploration and search noise | **9. Subagents** |
-| Ships the first rushed solution instead of a clean one | **10. Elegance** |
-| Burns Opus tokens on trivial tasks, or under-powers hard ones | **11. Model Optimization** |
-| Loses critical state (files, decisions, TODOs) when context compresses | **12. Compaction** |
+**Honesty and confidence.** Anthropic's [guidance on reducing hallucinations](https://docs.anthropic.com/en/docs/test-and-evaluate/strengthen-guardrails/reduce-hallucinations) is blunt about the fix: let the model say *"I don't know"* instead of guessing, have it answer only when it's genuinely confident, and make it flag when something in the request is unclear rather than quietly assuming. A model that agrees with everything and states guesses as fact is worse than one that pushes back. → rule **5. Honesty** (reinforced by **1. Think Before Coding**).
+
+**Speed vs. clarity.** Charging ahead *feels* efficient, but when the model acts on a task it only half-understood, it burns tokens building the wrong thing — then burns more undoing it. For anything complex, clarifying and planning first is cheaper than redoing. → rule **6. Planning**.
+
+**The model is a resource too.** Using a heavyweight model for a one-line change wastes money; under-powering a deep multi-file refactor wastes time. The right choice isn't fixed — it should be picked, and switched, per task. Making that explicit keeps both cost and capability in check. → rule **11. Model Optimization**.
+
+The remaining rules close predictable gaps in verification, error handling, context use, and quality:
+
+| # | Principle | What it prevents |
+|---|---|---|
+| 5 | **Honesty** | Confident guesses stated as fact; agreeing with everything; hiding uncertainty |
+| 6 | **Planning** | Diving into a multi-file change with no plan, then backtracking |
+| 7 | **Verification** | Marking a task "done" without running anything |
+| 8 | **Errors** | Stopping at the first error and asking the user to fix it |
+| 9 | **Subagents** | Saturating the main context with exploration and search noise |
+| 10 | **Elegance** | Shipping the first rushed solution instead of a clean one |
+| 11 | **Model Optimization** | Burning Opus tokens on trivial tasks, or under-powering hard ones |
+| 12 | **Compaction** | Losing critical state (files, decisions, TODOs) when context compresses |
 
 ---
 
 ## The rules in full
 
 ### 1. Think Before Coding
-*Don't assume. Don't hide confusion. Surface tradeoffs.* State assumptions explicitly; if uncertain, ask. Present multiple interpretations instead of silently picking one. If a simpler approach exists, say so. If something is unclear, stop and name what's confusing.
+
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
+
+Before implementing anything:
+- State your assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them — don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
 
 ### 2. Simplicity First
-*Minimum code that solves the problem. Nothing speculative.* No features beyond what was asked, no abstractions for single-use code, no unrequested "flexibility", no error handling for impossible scenarios. If 200 lines could be 50, rewrite it. The test: *"Would a senior engineer say this is overcomplicated?"*
+
+**Minimum code that solves the problem. Nothing speculative.**
+
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
+
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
 
 ### 3. Surgical Changes
-*Touch only what you must. Clean up only your own mess.* Don't improve adjacent code, comments, or formatting. Don't refactor what isn't broken. Match existing style. Remove orphans **your** changes created — but leave pre-existing dead code alone (flag it, don't delete it). Every changed line should trace directly to the request.
+
+**Touch only what you must. Clean up only your own mess.**
+
+When editing existing code:
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it — don't delete it.
+
+When your changes create orphans:
+- Remove imports/variables/functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
+
+The test: every changed line should trace directly to the user's request.
 
 ### 4. Goal-Driven Execution
-*Define success criteria. Loop until verified.* Turn vague tasks into verifiable goals: "fix the bug" → "write a test that reproduces it, then make it pass". State a brief plan for multi-step work. Strong criteria let the model loop independently; weak criteria ("make it work") force constant clarification.
+
+**Define success criteria. Loop until verified.**
+
+Transform tasks into verifiable goals:
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+For multi-step tasks, state a brief plan:
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+```
+
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
 ### 5. Honesty
-*If you don't know, say so.* Never hallucinate — state uncertainty up front. Be self-critical; push back constructively instead of just agreeing. When a mistake happens, analyze why and avoid repeating it; if it was a communication breakdown, surface it.
+
+**If you don't know, say so.**
+
+- Never hallucinate — if uncertain, state it explicitly at the start of your response.
+- Be self-critical. Don't just agree with the user; push back constructively when warranted.
+- If you made a mistake, analyze why and avoid repeating it.
+- If it was a communication breakdown, point it out so we can resolve it.
 
 ### 6. Planning
-*For non-trivial tasks, plan before coding.* A task is non-trivial if it touches multiple files, involves architecture decisions, or has ambiguity. Present (1) root cause/goal, (2) changes with file names, (3) open questions — and wait for validation. Simple changes: implement directly.
+
+**For non-trivial tasks, plan before coding.**
+
+A task is non-trivial if it touches multiple files, involves architecture decisions, or has ambiguity. Before writing any code:
+1. State the root cause or goal
+2. List the changes with file names
+3. Flag any open questions
+
+Wait for the user to validate the plan before implementing. Simple or obvious changes: implement directly.
 
 ### 7. Verification
-*Never mark done without proving it works.* Run tests, check logs, verify edge cases. Filter: *"Would a senior engineer approve this before shipping?"*
+
+**Never mark done without proving it works.**
+
+- Run tests, check logs, verify behavior in edge cases.
+- Filter: "Would a senior engineer approve this before shipping?"
 
 ### 8. Errors
-*Fix errors autonomously. No hand-holding.* Use logs, error messages, and failing tests to diagnose. Find the root cause — don't patch around it. Fix failing CI tests without asking what they mean.
+
+**Fix errors autonomously. No hand-holding.**
+
+When something fails:
+- Use logs, error messages, and failing tests to diagnose.
+- Find the root cause — don't patch around it.
+- Fix CI tests that fail without asking what they mean.
 
 ### 9. Subagents
-*Delegate research and exploration.* Don't saturate the main context with investigation. Send codebase exploration, research, and multi-step lookups to subagents; push maximum load to them on hard problems.
+
+**Delegate research and exploration.**
+
+For complex problems, don't saturate the main context with investigation. Delegate:
+- Codebase exploration and analysis to subagents.
+- Research and multi-step lookups to subagents.
+- Push maximum computational load to subagents on hard problems.
 
 ### 10. Elegance
-*Pause before delivering non-trivial work.* Ask: *"Is there a more elegant solution?"* If the implementation feels rushed or forced, rewrite it. Applies only to non-trivial changes — don't over-engineer simple fixes.
+
+**Pause before delivering non-trivial work.**
+
+Ask: "Is there a more elegant solution?" If the implementation feels rushed or forced, rewrite it. A clean solution now saves rewrites later.
+
+Only applies to non-trivial changes — don't over-engineer simple fixes.
 
 ### 11. Model Optimization
-*Use the right model for the task.* On Opus with a simple task, warn once to switch to `/model sonnet`. On Sonnet failing repeatedly or facing deep multi-file reasoning, suggest `/model opus`. Don't upgrade just because a task is long — only when it needs complex reasoning.
+
+**Use the right model for the task.**
+
+- On **Opus** with a simple task (chat, question, minor change, code search): warn once → *"This doesn't need Opus, use `/model sonnet` to save tokens."*
+- On **Sonnet** failing 2+ times on the same problem, or facing deep architectural reasoning across many files: warn → *"Consider `/model opus`."*
+- Don't suggest upgrading just because the task is long — only when it requires complex multi-file reasoning.
 
 ### 12. Compaction
-*Preserve what matters when the context window compresses.* When the conversation is compacted, the summary should retain: current task and status, modified files, errors and how they were resolved, pending TODOs, architecture decisions, and the active git branch/feature.
+
+**Preserve what matters when the context window compresses.**
+
+When the conversation is compacted (manually or automatically), ensure the summary retains:
+- Current task and its status (in progress, blocked, done)
+- Modified files and relevant paths
+- Errors encountered and how they were resolved
+- Pending TODOs and next steps
+- Architecture or design decisions made
+- Active git branch and feature in development
 
 ---
 
@@ -105,6 +205,7 @@ Fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and 
 
 - [Andrej Karpathy](https://github.com/multica-ai/andrej-karpathy-skills) — the original 4 principles this builds on
 - [Anthropic Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code) — official best practices and memory system
+- [Anthropic: reducing hallucinations](https://docs.anthropic.com/en/docs/test-and-evaluate/strengthen-guardrails/reduce-hallucinations) — honesty and confidence guidance
 
 ---
 

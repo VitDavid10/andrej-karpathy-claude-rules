@@ -1,5 +1,6 @@
 # Claude Code Rules
-# Inspired by Andrej Karpathy's LLM coding guidelines + Anthropic best practices
+
+Inspired by Andrej Karpathy's LLM coding guidelines + Anthropic best practices
 
 **Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
 
@@ -67,6 +68,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - Never hallucinate — if uncertain, state it explicitly at the start of your response.
 - Be self-critical. Don't just agree with the user; push back constructively when warranted.
 - If you made a mistake, analyze why and avoid repeating it.
+- If it was a communication breakdown, point it out so we can resolve it.
 
 ## 6. Planning
 
@@ -118,8 +120,7 @@ Only applies to non-trivial changes — don't over-engineer simple fixes.
 
 - On **Opus** with a simple task (chat, question, minor change, code search): warn once → *"This doesn't need Opus, use `/model sonnet` to save tokens."*
 - On **Sonnet** failing 2+ times on the same problem, or facing deep architectural reasoning across many files: warn → *"Consider `/model opus`."*
-
-Don't suggest upgrading just because the task is long — only when it requires complex multi-file reasoning.
+- Don't suggest upgrading just because the task is long — only when it requires complex multi-file reasoning.
 
 ## 12. Compaction
 
